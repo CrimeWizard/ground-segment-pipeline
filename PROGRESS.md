@@ -31,13 +31,23 @@
     - **Trend Visualization:** Integrated Area Charts to show vessel count patterns over time.
     - **Live Metrics:** Real-time polling for the latest vessel count and location-based telemetry.
     - **Raw Feed:** Chronological telemetry logs directly from the PostgreSQL database.
+    - **Theme Toggle:** Added support for Light and Dark modes.
 - **Result:** A fully integrated "closed-loop" system surfacing orbital intelligence to a modern web interface.
 
+### 5. Proactive Alerting Engine (Level 3)
+- **Feature:** Autonomous operational alerts via email.
+- **Infrastructure:**
+    - **Database Expansion:** Created `alert_thresholds` table to store per-port capacity and velocity triggers.
+    - **Detection Logic:** Integrated real-time threshold monitoring into the radar pass loop.
+    - **Dispatch Service:** Built a dedicated `alert_service` with AWS SES integration for professional mail dispatch.
+- **Result:** The system now identifies congestion spikes and capacity breaches, firing alerts directly to operations teams.
+
 ## Current Status
-- **Radar Pass:** Fully functional, filtered, and integrated with the database.
-- **Database:** Online, secure, and storing chronological metrics.
-- **Frontend Dashboard:** Operational with real-time data visualization.
-- **Optical Pass:** Placeholder currently exists; pending implementation.
+- **Radar Pass:** Multi-node monitoring active for 4 Egyptian ports.
+- **Database:** Online with per-port thresholds and historical tracking.
+- **Alerting:** Operational with capacity and velocity-based triggers.
+- **Dashboard:** Fully interactive with multi-node filtering and theme support.
+- **Optical Pass:** Placeholder exists; pending implementation.
 
 ---
 *Last Updated: June 15, 2026*

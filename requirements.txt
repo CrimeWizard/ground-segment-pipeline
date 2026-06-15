@@ -4,3 +4,4 @@ matplotlib
 python-dotenv
 psycopg2-binary
 scipy
+boto3

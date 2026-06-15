@@ -3,3 +3,4 @@ numpy
 matplotlib
 python-dotenv
 psycopg2-binary
+scipy

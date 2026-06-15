@@ -61,8 +61,7 @@ if __name__ == '__main__':
             print("Database connection successful.")
             conn.close()
             # Test insertion
-            print("
-Testing metric insertion...")
+            print("\nTesting metric insertion...")
             # This is a test, so we insert a dummy value
             insert_metric("Test Port", 0)
         except Exception as e:

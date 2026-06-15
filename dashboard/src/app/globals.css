@@ -3,20 +3,40 @@
 @theme {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-border-ui: var(--border-ui);
+  --color-muted-ui: var(--muted-ui);
+  --color-header: var(--header);
 }
 
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --surface: #ffffff;
+  --border-ui: #e5e7eb;
+  --muted-ui: #6b7280;
+  --header: #111111;
 }
 
 .dark {
   --background: #0a0a0b;
-  --foreground: #ededed;
+  --foreground: #d1d1d1;
+  --surface: #121214;
+  --border-ui: rgba(255, 255, 255, 0.05);
+  --muted-ui: rgba(255, 255, 255, 0.4);
+  --header: #ffffff;
 }
 
+/* Base styles using our variables */
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
   font-family: var(--font-mono);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
+
+/* Ensure the dark class on html works for utilities */
+@custom-variant dark (&:where(.dark, .dark *));

@@ -21,7 +21,7 @@ const TacticalMap: React.FC<TacticalMapProps> = ({ nodes, onSelectNode, selected
   const minLon = 28.5;
   const maxLon = 34.5;
   const minLat = 29.0;
-  const maxLat = 32.0;
+  const maxLat = 32.5;
 
   const project = (lat: number, lon: number) => {
     const x = ((lon - minLon) / (maxLon - minLon)) * 100;
@@ -29,66 +29,52 @@ const TacticalMap: React.FC<TacticalMapProps> = ({ nodes, onSelectNode, selected
     return { x: `${x}%`, y: `${y}%` };
   };
 
-  // Generate grid lines
-  const gridLines = useMemo(() => {
-    const lines = [];
-    for (let i = 1; i < 10; i++) {
-      lines.push(<line key={`v-${i}`} x1={`${i * 10}%`} y1="0" x2={`${i * 10}%`} y2="100%" className="stroke-current opacity-[0.03]" />);
-      lines.push(<line key={`h-${i}`} x1="0" y1={`${i * 10}%`} x2="100%" y2={`${i * 10}%`} className="stroke-current opacity-[0.03]" />);
-    }
-    return lines;
-  }, []);
-
   return (
     <div className="relative w-full h-[500px] bg-white dark:bg-[#0a0a0b] rounded-xl border border-border-ui overflow-hidden shadow-2xl transition-all duration-500">
-      {/* Dynamic Background Noise/Texture */}
-      <div className="absolute inset-0 opacity-[0.02] dark:opacity-[0.05] pointer-events-none" 
-           style={{ backgroundImage: 'url("https://www.transparenttextures.com/patterns/carbon-fibre.png")' }} />
+      {/* Tactical Grid Layer */}
+      <div className="absolute inset-0 opacity-[0.1] pointer-events-none" 
+           style={{ 
+             backgroundImage: 'linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)', 
+             backgroundSize: '40px 40px',
+             color: 'rgba(234, 88, 12, 0.2)' 
+           }} 
+      />
       
-      {/* Coordinate Grid */}
-      <svg className="absolute inset-0 w-full h-full text-foreground pointer-events-none">
-        {gridLines}
-      </svg>
-
-      {/* Realistic Tactical Coastline SVG */}
+      {/* Geographical Layer (SVG Coastline) */}
       <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
         <defs>
-          <linearGradient id="landGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="currentColor" stopOpacity="0.1" />
-            <stop offset="100%" stopColor="currentColor" stopOpacity="0.05" />
-          </linearGradient>
+          <filter id="glow">
+            <feGaussianBlur stdDeviation="1" result="blur" />
+            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+          </filter>
         </defs>
         
-        {/* Egypt North Coast & Delta & Red Sea Coastline */}
+        {/* Simplified but high-accuracy Egypt Coastline */}
         <path
           d="
-            M 0,35 
-            L 15,36 
-            L 22,34 
-            L 28,32 
-            C 35,28 45,20 55,25 
-            L 62,35 
-            L 64,45 
-            L 64,100 
+            M 0,40 
+            L 15,38 
+            L 25,35 
+            C 30,30 35,15 45,15 
+            C 55,15 60,30 65,35 
+            L 65,55 
+            L 60,65 
+            L 60,100 
             L 0,100 Z
           "
-          fill="url(#landGradient)"
-          className="text-gray-900 dark:text-gray-400 transition-colors duration-500"
+          className="fill-gray-100 dark:fill-white/5 stroke-border-ui stroke-[0.1] transition-colors duration-500"
         />
-        
-        {/* Suez Canal Path */}
+
+        {/* The Suez Canal & Gulf of Suez Channel */}
         <path
-          d="M 63,35 L 63.5,60"
-          stroke="#ea580c"
-          strokeWidth="0.3"
-          strokeDasharray="1,1"
-          className="opacity-40"
+          d="M 64,35 L 64,55 L 67,65 L 70,80"
+          className="fill-none stroke-orange-600/30 stroke-[0.2] stroke-dasharray-[1,1]"
         />
       </svg>
 
-      {/* Scanning Radar Effect */}
+      {/* Radar Sweep Effect */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-[-100%] left-0 w-full h-[200%] bg-gradient-to-b from-transparent via-orange-500/5 to-transparent animate-[scan_8s_linear_infinite]" />
+        <div className="absolute top-[-100%] left-0 w-full h-[200%] bg-gradient-to-b from-transparent via-orange-500/[0.03] to-transparent animate-[scan_6s_linear_infinite]" />
       </div>
 
       {/* Interactive Port Nodes */}
@@ -103,59 +89,69 @@ const TacticalMap: React.FC<TacticalMapProps> = ({ nodes, onSelectNode, selected
             className="absolute -translate-x-1/2 -translate-y-1/2 z-30"
             style={{ left: x, top: y }}
           >
-            {/* Range Rings */}
-            <div className={`absolute inset-0 rounded-full border border-current opacity-10 scale-[3] transition-transform duration-1000 ${isSelected ? 'scale-[5]' : ''}`} />
-            
+            {/* The Node Button */}
             <button
               onClick={() => onSelectNode(node.name)}
               className="relative flex flex-col items-center group cursor-pointer focus:outline-none"
             >
-              {/* Radar Ping Animation */}
-              <div className={`absolute inset-0 rounded-full animate-ping ${isCritical ? 'bg-red-500/40' : 'bg-orange-500/20'}`} style={{ width: '40px', height: '40px', margin: '-14px' }} />
-              
-              {/* Central Data Point */}
-              <div className={`w-3 h-3 rounded-full border-2 transition-all duration-300 shadow-lg ${
-                isSelected ? 'scale-150 border-white rotate-45' : 'border-transparent'
-              } ${isCritical ? 'bg-red-600' : 'bg-orange-600'}`} />
+              {/* Dynamic Range Rings (Fixed Circular Aspect Ratio) */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className={`aspect-square rounded-full border border-orange-500/20 transition-all duration-1000 ${
+                  isSelected ? 'w-48 opacity-20' : 'w-24 opacity-5'
+                }`} />
+                <div className={`absolute aspect-square rounded-full border border-orange-500/10 transition-all duration-1000 ${
+                  isSelected ? 'w-32 opacity-30' : 'w-16 opacity-10'
+                }`} />
+              </div>
 
-              {/* Data Tag */}
-              <div className={`mt-4 flex flex-col items-center transition-all duration-300 ${isSelected ? 'opacity-100 translate-y-0' : 'opacity-0 group-hover:opacity-100 translate-y-2'}`}>
-                <div className="bg-header text-background px-3 py-1 rounded-sm text-[9px] font-black uppercase tracking-widest shadow-2xl flex items-center gap-2 whitespace-nowrap">
+              {/* Radar Ping Animation */}
+              <div className={`absolute aspect-square rounded-full animate-ping ${isCritical ? 'bg-red-500/40' : 'bg-orange-500/30'}`} style={{ width: '20px' }} />
+              
+              {/* Central Signal Point */}
+              <div className={`w-3 h-3 rounded-full border-2 transition-all duration-500 shadow-[0_0_10px_rgba(234,88,12,0.4)] ${
+                isSelected ? 'scale-125 border-white bg-orange-500' : 'border-transparent bg-orange-600'
+              } ${isCritical ? 'bg-red-600 shadow-[0_0_15px_rgba(220,38,38,0.5)]' : ''}`} />
+
+              {/* Advanced Data Tag */}
+              <div className={`mt-4 flex flex-col items-center transition-all duration-300 ${
+                isSelected ? 'opacity-100 translate-y-0' : 'opacity-0 group-hover:opacity-100 translate-y-2'
+              }`}>
+                <div className="bg-[#121214] text-white px-2 py-1 rounded-sm text-[8px] font-black uppercase tracking-[0.2em] shadow-2xl flex items-center gap-2 border border-white/10">
                    <div className={`w-1 h-1 rounded-full ${isCritical ? 'bg-red-500 animate-pulse' : 'bg-orange-500'}`} />
-                   {node.name} // {node.vesselCount} UNITS
+                   {node.name} // <span className={isCritical ? 'text-red-500' : 'text-orange-500'}>{node.vesselCount} UNITS</span>
                 </div>
-                <div className="w-px h-2 bg-orange-600/50" />
               </div>
             </button>
           </div>
         );
       })}
 
-      {/* HUD Overlays */}
-      <div className="absolute top-6 left-6 flex flex-col gap-1 pointer-events-none">
-        <div className="text-[10px] font-black text-header flex items-center gap-2 uppercase tracking-tighter">
-          <div className="w-1.5 h-1.5 bg-orange-600" />
+      {/* HUD Info Overlays */}
+      <div className="absolute top-8 left-8 space-y-1 pointer-events-none">
+        <div className="text-[10px] font-black text-header uppercase tracking-tighter flex items-center gap-2">
+          <Activity className="w-3 h-3 text-orange-600" />
           Tactical Command Center
         </div>
-        <div className="text-[8px] text-muted-ui uppercase tracking-widest opacity-60 font-bold">
-          Signal: CDSE-S1 // Area: EGY-MED-RED
+        <div className="text-[8px] text-muted-ui uppercase tracking-[0.3em] font-bold opacity-50">
+          Node_Status: {selectedLocation.toUpperCase()} // ACTIVE
         </div>
       </div>
 
-      {/* Map Legend (HUD Style) */}
-      <div className="absolute bottom-6 right-6 flex flex-col gap-3 p-4 bg-background/80 backdrop-blur-sm border border-border-ui rounded-md shadow-xl pointer-events-none">
-        <div className="text-[7px] font-bold text-muted-ui uppercase tracking-[0.2em] mb-1">Telemetry Legend</div>
-        <div className="flex items-center gap-3">
-          <div className="w-2 h-2 rounded-full bg-orange-600" />
-          <span className="text-[8px] uppercase font-bold text-header">Nominal Zone</span>
+      {/* Coordinate HUD */}
+      <div className="absolute bottom-8 right-8 p-4 bg-background/90 backdrop-blur-md border border-border-ui rounded shadow-2xl pointer-events-none min-w-[140px]">
+        <div className="text-[7px] font-black text-muted-ui uppercase tracking-widest mb-3 pb-2 border-b border-border-ui flex justify-between">
+           <span>Signal Lock</span>
+           <span className="text-orange-600">Verified</span>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="w-2 h-2 rounded-full bg-red-600 animate-pulse" />
-          <span className="text-[8px] uppercase font-bold text-header">Congested Node</span>
-        </div>
-        <div className="mt-2 pt-2 border-t border-border-ui flex justify-between items-center gap-4">
-           <span className="text-[7px] text-muted-ui font-black uppercase tracking-tighter">Lat: 31.2N</span>
-           <span className="text-[7px] text-muted-ui font-black uppercase tracking-tighter">Lon: 32.3E</span>
+        <div className="space-y-2">
+          <div className="flex justify-between items-center gap-4">
+             <span className="text-[8px] text-muted-ui uppercase font-bold">Traffic</span>
+             <span className="text-[10px] text-header font-black tracking-tighter">NOMINAL</span>
+          </div>
+          <div className="flex justify-between items-center gap-4">
+             <span className="text-[8px] text-muted-ui uppercase font-bold">Delta</span>
+             <span className="text-[10px] text-orange-500 font-black tracking-tighter">+4.2%</span>
+          </div>
         </div>
       </div>
 
@@ -168,5 +164,12 @@ const TacticalMap: React.FC<TacticalMapProps> = ({ nodes, onSelectNode, selected
     </div>
   );
 };
+
+// Internal Activity Icon mock for the component
+const Activity = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+  </svg>
+);
 
 export default TacticalMap;

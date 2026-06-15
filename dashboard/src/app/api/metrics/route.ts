@@ -17,7 +17,7 @@ export async function GET() {
   try {
     const client = await pool.connect();
     const result = await client.query(
-      'SELECT id, timestamp, location, vessel_count FROM port_metrics ORDER BY timestamp DESC LIMIT 100'
+      'SELECT id, timestamp, location, vessel_count FROM port_metrics ORDER BY timestamp ASC LIMIT 100'
     );
     client.release();
     

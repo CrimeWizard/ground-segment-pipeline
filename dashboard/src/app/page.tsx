@@ -2,6 +2,7 @@
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import { 
   XAxis, 
   YAxis, 
@@ -16,15 +17,24 @@ import {
   Activity, 
   Calendar, 
   MapPin, 
-  RefreshCw,
-  AlertCircle,
-  Filter,
-  Sun,
-  Moon,
-  Globe
+  RefreshCw, 
+  AlertCircle, 
+  Filter, 
+  Sun, 
+  Moon, 
+  Globe 
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
-import TacticalMap from './components/TacticalMap';
+
+// Dynamically import MapVisualizer with SSR disabled
+const MapVisualizer = dynamic(() => import('./components/MapVisualizer'), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-[500px] bg-surface border border-border-ui rounded-xl flex items-center justify-center text-muted-ui italic">
+      Initialing Tactical Map...
+    </div>
+  ),
+});
 
 interface PortMetric {
   id: number;
@@ -38,7 +48,6 @@ interface Threshold {
   max_capacity: number;
 }
 
-// Fixed coordinates matching targets.json for the map
 const PORT_COORDS: Record<string, { lat: number, lon: number }> = {
   'Ain Sokhna': { lat: 29.648028, lon: 32.356364 },
   'Alexandria': { lat: 31.2001, lon: 29.8917 },
@@ -79,7 +88,7 @@ export default function Home() {
   useEffect(() => {
     setMounted(true);
     fetchData();
-    const interval = setInterval(fetchData, 300000); // 5 min sync
+    const interval = setInterval(fetchData, 300000);
     return () => clearInterval(interval);
   }, []);
 
@@ -93,7 +102,6 @@ export default function Home() {
     return metrics.filter(m => m.location === selectedLocation);
   }, [metrics, selectedLocation]);
 
-  // Data for the Tactical Map
   const mapNodes = useMemo(() => {
     return Object.keys(PORT_COORDS).map(name => {
       const locMetrics = metrics.filter(m => m.location === name);
@@ -168,7 +176,7 @@ export default function Home() {
             {selectedLocation === 'All' ? 'Global Maritime Intelligence' : `${selectedLocation} Sector Analysis`}
           </h1>
           <p className="text-muted-ui max-w-2xl leading-relaxed">
-            SAR-based vessel detection across {selectedLocation === 'All' ? 'Egypt\'s primary logistical nodes' : `the ${selectedLocation} maritime zone`}. 
+            SAR-based vessel detection via Sentinel-1 Synthetic Aperture Radar (SAR). Monitoring logistics bottlenecks across Egypt's primary maritime nodes.
           </p>
         </div>
 
@@ -180,15 +188,14 @@ export default function Home() {
         ) : (
           <div className="space-y-6">
             
-            {/* NEW: Tactical Geospatial Map */}
+            {/* Real-World Interactive Map */}
             <div className="w-full">
               <div className="flex items-center gap-2 text-muted-ui mb-4 uppercase text-[10px] tracking-widest font-bold">
                 <Globe className="w-3 h-3 text-orange-500" />
-                Geospatial Operational Theatre
+                Live Geospatial Overlay
               </div>
-              <TacticalMap 
+              <MapVisualizer 
                 nodes={mapNodes} 
-                onSelectNode={setSelectedLocation} 
                 selectedLocation={selectedLocation} 
               />
             </div>
@@ -334,7 +341,7 @@ export default function Home() {
 
       <footer className="mt-24 border-t border-border-ui py-12 px-6">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8 text-[10px] text-muted-ui uppercase tracking-[0.3em]">
-          <div>Status: Tactical Map Overlay Active</div>
+          <div>Status: Orbital Signal Sync Active</div>
           <div className="flex gap-8 tracking-widest text-muted-ui lowercase italic">
             <span>geo_sync_alexandria...</span>
             <span>geo_sync_port_said...</span>

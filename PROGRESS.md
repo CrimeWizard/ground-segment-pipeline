@@ -24,10 +24,20 @@
     - **Size Filtering:** Implemented a connected-component size filter (2 to 100 pixels) to exclude single-pixel noise and large land masses.
 - **Result:** Vessel count reduced to a realistic ~197 for the 30-day monitoring window.
 
+### 4. Next.js Logistics Dashboard (Phase 3)
+- **Feature:** Implemented a high-density "Industrial Elegance" dashboard.
+- **Frontend Tech:** Next.js 16, Tailwind CSS 4, Recharts, and Lucide-react.
+- **Capabilities:**
+    - **Trend Visualization:** Integrated Area Charts to show vessel count patterns over time.
+    - **Live Metrics:** Real-time polling for the latest vessel count and location-based telemetry.
+    - **Raw Feed:** Chronological telemetry logs directly from the PostgreSQL database.
+- **Result:** A fully integrated "closed-loop" system surfacing orbital intelligence to a modern web interface.
+
 ## Current Status
-- **Radar Pass:** Fully functional and integrated with the database.
-- **Database:** Online and storing metrics.
+- **Radar Pass:** Fully functional, filtered, and integrated with the database.
+- **Database:** Online, secure, and storing chronological metrics.
+- **Frontend Dashboard:** Operational with real-time data visualization.
 - **Optical Pass:** Placeholder currently exists; pending implementation.
 
 ---
-*Date: June 15, 2026*
+*Last Updated: June 15, 2026*

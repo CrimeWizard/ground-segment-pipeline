@@ -1,10 +1,8 @@
 // src/app/page.tsx
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { 
-  BarChart, 
-  Bar, 
   XAxis, 
   YAxis, 
   CartesianGrid, 
@@ -19,7 +17,8 @@ import {
   Calendar, 
   MapPin, 
   RefreshCw,
-  AlertCircle
+  AlertCircle,
+  Filter
 } from 'lucide-react';
 
 interface PortMetric {
@@ -33,6 +32,7 @@ export default function Home() {
   const [metrics, setMetrics] = useState<PortMetric[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedLocation, setSelectedLocation] = useState<string>('All');
 
   const fetchMetrics = async () => {
     try {
@@ -55,15 +55,27 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
-  const latestMetric = metrics.length > 0 ? metrics[metrics.length - 1] : null;
-  const previousMetric = metrics.length > 1 ? metrics[metrics.length - 2] : null;
+  // Extract unique locations for the filter
+  const locations = useMemo(() => {
+    const locs = Array.from(new Set(metrics.map(m => m.location)));
+    return ['All', ...locs.sort()];
+  }, [metrics]);
+
+  // Filter metrics based on selection
+  const filteredMetrics = useMemo(() => {
+    if (selectedLocation === 'All') return metrics;
+    return metrics.filter(m => m.location === selectedLocation);
+  }, [metrics, selectedLocation]);
+
+  const latestMetric = filteredMetrics.length > 0 ? filteredMetrics[filteredMetrics.length - 1] : null;
+  const previousMetric = filteredMetrics.length > 1 ? filteredMetrics[filteredMetrics.length - 2] : null;
   
   const trend = latestMetric && previousMetric 
     ? latestMetric.vessel_count - previousMetric.vessel_count 
     : 0;
 
-  const chartData = metrics.map(m => ({
-    time: new Date(m.timestamp).toLocaleDateString([], { month: 'short', day: 'numeric' }),
+  const chartData = filteredMetrics.map(m => ({
+    time: new Date(m.timestamp).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit' }),
     count: m.vessel_count
   }));
 
@@ -78,12 +90,29 @@ export default function Home() {
             </div>
             <span className="text-lg font-bold tracking-tighter text-white uppercase">Orbital Freight Intel</span>
           </div>
-          <div className="flex items-center gap-6 text-[10px] uppercase tracking-[0.2em] text-white/40">
-            <div className="flex items-center gap-2">
+          
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-white/40">
               <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
               Live Stream
             </div>
-            <button onClick={fetchMetrics} className="hover:text-white transition-colors cursor-pointer">
+            
+            <div className="h-4 w-px bg-white/10" />
+
+            <div className="flex items-center gap-2">
+              <Filter className="w-3 h-3 text-white/40" />
+              <select 
+                value={selectedLocation}
+                onChange={(e) => setSelectedLocation(e.target.value)}
+                className="bg-transparent text-[10px] uppercase tracking-widest font-bold text-white/80 focus:outline-none cursor-pointer hover:text-white transition-colors"
+              >
+                {locations.map(loc => (
+                  <option key={loc} value={loc} className="bg-[#121214]">{loc}</option>
+                ))}
+              </select>
+            </div>
+
+            <button onClick={fetchMetrics} className="hover:text-white transition-colors cursor-pointer text-white/40">
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             </button>
           </div>
@@ -93,16 +122,19 @@ export default function Home() {
       <div className="max-w-7xl mx-auto px-6 py-12">
         {/* Header Section */}
         <div className="mb-12 border-l-2 border-orange-600 pl-6">
-          <h1 className="text-4xl font-black text-white uppercase tracking-tight mb-2">Maritime Traffic Intelligence</h1>
+          <h1 className="text-4xl font-black text-white uppercase tracking-tight mb-2">
+            {selectedLocation === 'All' ? 'Global Maritime Intelligence' : `${selectedLocation} Sector Analysis`}
+          </h1>
           <p className="text-white/40 max-w-2xl leading-relaxed">
-            Real-time vessel detection via Sentinel-1 Synthetic Aperture Radar (SAR). Monitoring logistics bottlenecks across key economic zones.
+            SAR-based vessel detection across {selectedLocation === 'All' ? 'Egypt\'s primary logistical nodes' : `the ${selectedLocation} maritime zone`}. 
+            Data refined via 10m resolution radar backscatter analysis.
           </p>
         </div>
 
         {error ? (
           <div className="bg-red-950/20 border border-red-500/50 p-8 rounded-lg flex items-center gap-4 text-red-200">
             <AlertCircle className="w-6 h-6" />
-            <p>System Failure: {error}. Verify database connectivity and .env configuration.</p>
+            <p>System Failure: {error}. Verify database connectivity.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -116,7 +148,7 @@ export default function Home() {
               <div className="relative z-10">
                 <div className="flex items-center gap-2 text-white/40 mb-6 uppercase text-[10px] tracking-widest font-bold">
                   <Activity className="w-3 h-3 text-orange-500" />
-                  Current Congestion
+                  Sector Density
                 </div>
                 
                 <div className="flex items-baseline gap-4 mb-2">
@@ -128,20 +160,20 @@ export default function Home() {
 
                 {trend !== 0 && (
                   <div className={`text-xs font-bold uppercase flex items-center gap-1 ${trend > 0 ? 'text-orange-500' : 'text-green-500'}`}>
-                    {trend > 0 ? '▲' : '▼'} {Math.abs(trend)} from last pass
+                    {trend > 0 ? '▲' : '▼'} {Math.abs(trend)} from previous pass
                   </div>
                 )}
 
                 <div className="mt-12 space-y-4 pt-12 border-t border-white/5">
                   <div className="flex justify-between items-center text-xs">
-                    <span className="text-white/40 uppercase tracking-widest">Location</span>
+                    <span className="text-white/40 uppercase tracking-widest">Active Zone</span>
                     <span className="text-white font-bold flex items-center gap-2">
                       <MapPin className="w-3 h-3 text-orange-500" />
-                      {latestMetric?.location || 'Unassigned'}
+                      {latestMetric?.location || 'Awaiting Data'}
                     </span>
                   </div>
                   <div className="flex justify-between items-center text-xs">
-                    <span className="text-white/40 uppercase tracking-widest">Last Scan</span>
+                    <span className="text-white/40 uppercase tracking-widest">Orbital Revisit</span>
                     <span className="text-white font-bold flex items-center gap-2">
                       <Calendar className="w-3 h-3 text-orange-500" />
                       {latestMetric ? new Date(latestMetric.timestamp).toLocaleTimeString() : 'N/A'}
@@ -156,17 +188,17 @@ export default function Home() {
               <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-2 text-white/40 uppercase text-[10px] tracking-widest font-bold">
                   <Activity className="w-3 h-3 text-orange-500" />
-                  30-Day Trend Analysis
+                  {selectedLocation} Passage Trend
                 </div>
                 <div className="text-[10px] text-white/20 uppercase tracking-widest font-bold">
-                  Resolution: 10M / Pass
+                  Telemetry ID: SAR-S1-IW
                 </div>
               </div>
 
               <div className="h-[300px] w-full">
                 {loading ? (
                   <div className="w-full h-full flex items-center justify-center text-white/10 italic">
-                    Acquiring Signal...
+                    Syncing Orbital Data...
                   </div>
                 ) : (
                   <ResponsiveContainer width="100%" height="100%">
@@ -223,21 +255,21 @@ export default function Home() {
             <div className="lg:col-span-3 bg-[#121214] border border-white/5 rounded-lg overflow-hidden">
               <div className="p-6 border-b border-white/5 bg-white/[0.02]">
                 <div className="text-white/40 uppercase text-[10px] tracking-widest font-bold">
-                  Raw Telemetry Logs
+                  Sector Telemetry Feed
                 </div>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
                   <thead>
                     <tr className="border-b border-white/5 text-white/20 uppercase tracking-tighter">
-                      <th className="px-6 py-4 font-bold">Scan ID</th>
-                      <th className="px-6 py-4 font-bold">Coordinates / Area</th>
+                      <th className="px-6 py-4 font-bold">Log ID</th>
+                      <th className="px-6 py-4 font-bold">Target Node</th>
                       <th className="px-6 py-4 font-bold">Timestamp (UTC)</th>
-                      <th className="px-6 py-4 font-bold text-right">Detected Units</th>
+                      <th className="px-6 py-4 font-bold text-right">Units Detected</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/[0.02]">
-                    {metrics.slice().reverse().map((m) => (
+                    {filteredMetrics.slice().reverse().map((m) => (
                       <tr key={m.id} className="hover:bg-white/[0.02] transition-colors group">
                         <td className="px-6 py-4 font-mono text-white/40">#{m.id.toString().padStart(4, '0')}</td>
                         <td className="px-6 py-4 text-white/80 font-bold">{m.location}</td>
@@ -260,14 +292,12 @@ export default function Home() {
 
       {/* Footer Decoration */}
       <footer className="mt-24 border-t border-white/5 py-12 px-6">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
-          <div className="text-[10px] text-white/20 uppercase tracking-[0.3em]">
-            System Status: Nominal // Data Integrity Verified
-          </div>
-          <div className="flex gap-8 text-[10px] text-white/40 uppercase tracking-widest">
-            <span className="hover:text-white cursor-pointer transition-colors underline decoration-orange-500 underline-offset-4">Privacy Protocol</span>
-            <span className="hover:text-white cursor-pointer transition-colors underline decoration-orange-500 underline-offset-4">API Documentation</span>
-            <span className="hover:text-white cursor-pointer transition-colors underline decoration-orange-500 underline-offset-4">Signal Source: CDSE</span>
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8 text-[10px] text-white/20 uppercase tracking-[0.3em]">
+          <div>Status: Multi-Node Scaling Active</div>
+          <div className="flex gap-8 tracking-widest text-white/40 lowercase italic">
+            <span>monitoring_alexandria_node...</span>
+            <span>monitoring_port_said_node...</span>
+            <span>monitoring_damietta_node...</span>
           </div>
         </div>
       </footer>

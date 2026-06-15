@@ -1,0 +1,30 @@
+[
+  {
+    "name": "Ain Sokhna",
+    "lat": 29.648028,
+    "lon": 32.356364,
+    "bbox_size": 0.03,
+    "offset_lon": 0.01
+  },
+  {
+    "name": "Alexandria",
+    "lat": 31.2001,
+    "lon": 29.8917,
+    "bbox_size": 0.04,
+    "offset_lon": 0.00
+  },
+  {
+    "name": "Port Said",
+    "lat": 31.2653,
+    "lon": 32.3019,
+    "bbox_size": 0.04,
+    "offset_lon": 0.00
+  },
+  {
+    "name": "Damietta",
+    "lat": 31.4328,
+    "lon": 31.7542,
+    "bbox_size": 0.03,
+    "offset_lon": 0.00
+  }
+]
